@@ -51,7 +51,7 @@ resource "aws_security_group_rule" "ingress_cidr_blocks" {
 }
 
 resource "aws_security_group_rule" "egress" {
-  count             = var.enabled ? 1 : 0
+  count             = 0
   description       = "Allow all egress traffic"
   type              = "egress"
   from_port         = 0
