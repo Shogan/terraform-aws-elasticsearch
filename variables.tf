@@ -228,3 +228,15 @@ variable "node_to_node_encryption_enabled" {
   default     = false
   description = "Whether to enable node-to-node encryption"
 }
+
+variable "existing_security_groups_for_access" {
+  type        = list(string)
+  default     = []
+  description = "List of VPC Security Group IDs to be applied to the Elasticsearch domain endpoints. If omitted, the default Security Group for the VPC will be used. When providing this with an list of values then no new security groups will be provisioned, but rather these existing ones will be used."
+}
+
+variable "custom_access_policies" {
+  type        = string
+  default     = ""
+  description = "A custom IAM policy document specifying the access policies for the ElasticSearch domain. If this is specified, then it will override the auto-generated one based on the variables iam_role_arns and iam_authorizing_role_arns."
+}

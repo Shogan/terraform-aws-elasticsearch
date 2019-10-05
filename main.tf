@@ -21,7 +21,7 @@ module "user_label" {
 }
 
 resource "aws_security_group" "default" {
-  count       = var.enabled ? 1 : 0
+  count       = var.enabled && length(var.existing_security_groups_for_access) <= 0 ? 1 : 0
   vpc_id      = var.vpc_id
   name        = module.label.id
   description = "Allow inbound traffic from Security Groups and CIDRs. Allow all outbound traffic"
@@ -29,7 +29,7 @@ resource "aws_security_group" "default" {
 }
 
 resource "aws_security_group_rule" "ingress_security_groups" {
-  count                    = var.enabled ? length(var.security_groups) : 0
+  count                    = var.enabled && length(var.existing_security_groups_for_access) <= 0 ? length(var.security_groups) : 0
   description              = "Allow inbound traffic from Security Groups"
   type                     = "ingress"
   from_port                = 0
@@ -51,7 +51,7 @@ resource "aws_security_group_rule" "ingress_cidr_blocks" {
 }
 
 resource "aws_security_group_rule" "egress" {
-  count             = 0
+  count             = var.enabled && length(var.existing_security_groups_for_access) <= 0 ? 1 : 0
   description       = "Allow all egress traffic"
   type              = "egress"
   from_port         = 0
@@ -136,7 +136,7 @@ resource "aws_elasticsearch_domain" "default" {
   }
 
   vpc_options {
-    security_group_ids = [join("", aws_security_group.default.*.id)]
+    security_group_ids = "${length(var.existing_security_groups_for_access) > 0 ? var.existing_security_groups_for_access : [join("", aws_security_group.default.*.id)]}"
     subnet_ids         = var.subnet_ids
   }
 
@@ -185,8 +185,14 @@ data "aws_iam_policy_document" "default" {
   }
 }
 
+resource "aws_elasticsearch_domain_policy" "custom" {
+  count           = var.enabled && var.custom_access_policies != "" ? 1 : 0
+  domain_name     = aws_elasticsearch_domain.default[0].domain_name
+  access_policies = var.custom_access_policies
+}
+
 resource "aws_elasticsearch_domain_policy" "default" {
-  count           = var.enabled && (length(var.iam_authorizing_role_arns) > 0 || length(var.iam_role_arns) > 0) ? 1 : 0
+  count           = var.enabled && var.custom_access_policies == "" && (length(var.iam_authorizing_role_arns) > 0 || length(var.iam_role_arns) > 0) ? 1 : 0
   domain_name     = module.label.id
   access_policies = join("", data.aws_iam_policy_document.default.*.json)
 }

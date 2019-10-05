@@ -6,6 +6,24 @@
 # terraform-aws-elasticsearch [![Codefresh Build Status](https://g.codefresh.io/api/badges/pipeline/cloudposse/terraform-modules%2Fterraform-aws-elasticsearch?type=cf-1)](https://g.codefresh.io/public/accounts/cloudposse/pipelines/5d22bfe5a7e22ea3b67ea820) [![Latest Release](https://img.shields.io/github/release/cloudposse/terraform-aws-elasticsearch.svg)](https://github.com/cloudposse/terraform-aws-elasticsearch/releases/latest) [![Slack Community](https://slack.cloudposse.com/badge.svg)](https://slack.cloudposse.com)
 
 
+## Fork Modifications
+
+** Important Fork modifications **
+
+This Terraform module was forked from the [CloudPosse terraform-aws-elasticsearch](https://github.com/cloudposse/terraform-aws-elasticsearch) repository.
+
+The main goal of this fork is to have a module that allows for the creation of AWS ElasticSearch resources in AWS accounts/environments where the Security Group and/or IAM resources have been locked down, or denied access to via corporate / company policy.
+
+Some organisations have teams that manage security and might prevent other teams from modifying or creating Security Groups and/or IAM resources, instead providing them with an interface to create these resources up-front.
+
+This module allows these pre-created resources for IAM / Security Groups to be fed in, instead of having the module create these resources dynamically (where their creation would otherwise fail with those IAM permissions being denied).
+
+These are the modifications that I have made (so far):
+
+* Allow for passing in pre-defined, pre-created Security Groups for the ElasticSearch domain that is created with this module. Doing this will disable the auto-generated security group creation that the original module does based on hooking up existing SGs to have access to ES via a newly terraformed SG.
+* Allow for passing in of a custom ES domain access policy by data template, instead of relying on IAM roles and IAM resources being dynamically created by the module. If you pass in a custom policy, then the module will not use it's own default version.
+
+
 Terraform module to provision an [`Elasticsearch`](https://aws.amazon.com/elasticsearch-service/) cluster with built-in integrations with [Kibana](https://aws.amazon.com/elasticsearch-service/kibana/) and [Logstash](https://aws.amazon.com/elasticsearch-service/logstash/).
 
 
